@@ -25,6 +25,9 @@ WORKDIR /app
 # Copy the built binary
 COPY --from=builder /app/crm-lite .
 
+# Copy the JSON file your app needs
+COPY allowed_origins.json .
+
 # Expose the port your app listens on
 EXPOSE 8080
 
