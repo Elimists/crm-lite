@@ -82,6 +82,7 @@ func CreateContact(w http.ResponseWriter, r *http.Request) {
 	}
 
 	source := r.Header.Get("Origin")
+	log.Println("Incoming Origin:", source)
 	if source == "" {
 		http.Error(w, "missing origin header", http.StatusBadRequest)
 		return
