@@ -1,35 +1,26 @@
-# Use the official Go image for building
+# Builder stage
 FROM golang:1.25-alpine AS builder
 
-# Set working directory
+# Install build tools for cgo
+RUN apk add --no-cache gcc musl-dev
+
 WORKDIR /app
 
-# Copy Go modules files
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
-# Copy the rest of your app
 COPY . .
 
-# Build the binary
+# Enable CGO for go-sqlite3
+ENV CGO_ENABLED=1
 RUN go build -o crm-lite .
 
-# Use a minimal image for runtime
+# Final stage
 FROM alpine:latest
 
-# Set working directory
 WORKDIR /app
-
-# Copy the built binary
 COPY --from=builder /app/crm-lite .
-
-# Copy the JSON file your app needs
 COPY allowed_origins.json .
 
-# Expose the port your app listens on
 EXPOSE 8080
-
-# Run the app
 CMD ["./crm-lite"]
