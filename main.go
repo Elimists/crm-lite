@@ -48,52 +48,60 @@ type Contact struct {
 	UpdatedAt    string `json:"updated_at"`
 }
 
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"name":    "crm-lite",
+		"version": "1.0.0",
+		"status":  "running",
+	})
+
+}
+
 func ContactHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		CreateContact(w, r)
-	case http.MethodGet:
-		GetContacts(w, r)
+		/*
+			case http.MethodGet:
+				GetContacts(w, r)
+		*/
 	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
 func CreateContact(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	var c Contact
 
 	err := json.NewDecoder(r.Body).Decode(&c)
 	if err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
 
 	source := r.Header.Get("Origin")
 	if source == "" {
-		http.Error(w, "Missing origin header", http.StatusBadRequest)
+		http.Error(w, "missing origin header", http.StatusBadRequest)
 		return
 	}
 
 	if !allowedOrigins[source] {
-		http.Error(w, "Not allowed", http.StatusForbidden)
+		http.Error(w, "not allowed", http.StatusForbidden)
 		return
 	}
 
 	stmt, err := db.Prepare("INSERT INTO contacts(name, email, phone, message, source_domain) VALUES(?, ?, ?, ?, ?)")
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		http.Error(w, "database error (prep)", http.StatusInternalServerError)
 		return
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(c.Name, c.Email, c.Phone, c.Message, source)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		http.Error(w, "batabase error (exec)", http.StatusInternalServerError)
 		return
 	}
 
@@ -108,7 +116,7 @@ func GetContacts(w http.ResponseWriter, r *http.Request) {
 	var totalCount int
 	err := db.QueryRow("SELECT COUNT(*) FROM contacts").Scan(&totalCount)
 	if err != nil {
-		http.Error(w, "Database error "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "database error (sele)"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -202,6 +210,7 @@ func main() {
 
 	log.Println("Contacts table initialized.")
 
+	http.HandleFunc("/", HomeHandler)
 	http.HandleFunc("/contact", ContactHandler)
 
 	log.Println("Server started on :8080")
