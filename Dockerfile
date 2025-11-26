@@ -22,5 +22,8 @@ WORKDIR /app
 COPY --from=builder /app/crm-lite .
 COPY allowed_origins.json .
 
+# Copy database folder
+COPY database ./database
+
 EXPOSE 8080
 CMD ["./crm-lite"]
