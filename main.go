@@ -73,23 +73,25 @@ func ContactHandler(w http.ResponseWriter, r *http.Request) {
 
 func CreateContact(w http.ResponseWriter, r *http.Request) {
 
-	var c Contact
-
-	err := json.NewDecoder(r.Body).Decode(&c)
-	if err != nil {
-		http.Error(w, "invalid json", http.StatusBadRequest)
-		return
-	}
-
 	source := r.Header.Get("Origin")
-	log.Println("Incoming Origin:", source)
 	if source == "" {
+		log.Println("incoming request is missing origin header")
 		http.Error(w, "missing origin header", http.StatusBadRequest)
 		return
 	}
 
 	if !allowedOrigins[source] {
+		log.Println("origin not allowed:", source)
 		http.Error(w, "not allowed", http.StatusForbidden)
+		return
+	}
+	log.Println("incoming request from origin:", source)
+
+	var c Contact
+
+	err := json.NewDecoder(r.Body).Decode(&c)
+	if err != nil {
+		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
 
@@ -106,6 +108,7 @@ func CreateContact(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("new contact created for ", c.Email)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -180,6 +183,9 @@ func GetContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
+
 	err := loadAllowedOrigins("allowed_origins.json")
 	if err != nil {
 		log.Fatal("Failed to load allowed origins:", err)
