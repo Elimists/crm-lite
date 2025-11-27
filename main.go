@@ -3,11 +3,14 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"math"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -35,6 +38,99 @@ func loadAllowedOrigins(filename string) error {
 }
 
 var db *sql.DB
+
+func init() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
+
+	if err := loadAllowedOrigins("allowed_origins.json"); err != nil {
+		log.Fatal("[INIT_ERR] Failed to load allowed origins: ", err)
+	}
+
+	required := []string{"MAILTRAP_API_TOKEN", "MAILTRAP_ENDPOINT"}
+	for _, v := range required {
+		if os.Getenv(v) == "" {
+			log.Fatalf("[INIT_ERR] Environment variable %s is not set. Please set it before running the application.", v)
+		}
+	}
+
+	var err error
+	db, err = sql.Open("sqlite3", "./database/contacts.db")
+	if err != nil {
+		log.Fatal("[INIT_ERR] Failed to open database:", err)
+	}
+
+	sqlStmt := `
+    CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        uuid TEXT NOT NULL DEFAULT (lower(hex(randomblob(8)))),
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT,
+        message TEXT NOT NULL,
+        source_domain TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'new',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    `
+	if _, err := db.Exec(sqlStmt); err != nil {
+		log.Fatal("[INIT_ERR] Failed to create table:", err)
+	}
+
+	log.Println("Initialization complete: DB + Allowed Origins + SMTP OK.")
+
+}
+
+func sendMailtrapEmail(c Contact) error {
+	apiToken := os.Getenv("MAILTRAP_API_TOKEN")
+
+	payloadStr := fmt.Sprintf(`{
+		"to": [
+			{
+				"email":"info@weather-wizards.com",
+				"name":"James Belanger"
+			}
+		],
+		"bcc": [
+			{
+				"email": "pandey.pran@gmail.com",
+				"name": "Pran Pandey"
+			}
+		],
+		"from": {
+			"email":"no-reply@proreact.dev",
+			"name":"Weather Wizards Contact Form"
+		},
+		"subject":"New Contact Form Submission",
+		"text":"New contact submitted:\n\nName: %s\nEmail: %s\nPhone: %s\nMessage: %s",
+		"category":"Weather Wizards Contact Form"
+	}`, c.Name, c.Email, c.Phone, c.Message)
+
+	payload := strings.NewReader(payloadStr)
+	req, err := http.NewRequest("POST", os.Getenv("MAILTRAP_ENDPOINT"), payload)
+	if err != nil {
+		fmt.Println("[MAIL_ERROR] Failed to create request:", err)
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Api-Token", apiToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("[MAIL_ERROR] Failed to send request:", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	_, err = io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("[MAIL_ERROR] Failed to read response body:", err)
+		return err
+	}
+	return nil
+}
 
 type Contact struct {
 	UUID         string `json:"uuid"`
@@ -107,8 +203,13 @@ func CreateContact(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "batabase error (exec)", http.StatusInternalServerError)
 		return
 	}
-
 	log.Println("new contact created for ", c.Email)
+
+	if err := sendMailtrapEmail(c); err != nil {
+		log.Println("failed to send alert email: ", err)
+	}
+	log.Println("alert email sent for ", c.Email)
+
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -183,39 +284,6 @@ func GetContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
-	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
-
-	err := loadAllowedOrigins("allowed_origins.json")
-	if err != nil {
-		log.Fatal("Failed to load allowed origins:", err)
-	}
-
-	db, err = sql.Open("sqlite3", "./database/contacts.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	sqlStmt := `
-	CREATE TABLE IF NOT EXISTS contacts (
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		uuid TEXT NOT NULL DEFAULT (lower(hex(randomblob(8)))),
-		name TEXT NOT NULL,
-		email TEXT NOT NULL,
-		phone TEXT,
-		message TEXT NOT NULL,
-		source_domain TEXT NOT NULL,
-		status TEXT NOT NULL DEFAULT 'new',
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	);
-	`
-	_, err = db.Exec(sqlStmt)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Contacts table initialized.")
 
 	http.HandleFunc("/", HomeHandler)
 	http.HandleFunc("/contact", ContactHandler)
