@@ -46,7 +46,7 @@ func init() {
 		log.Fatal("[INIT_ERR] Failed to load allowed origins: ", err)
 	}
 
-	required := []string{"MAILTRAP_API_TOKEN", "MAILTRAP_ENDPOINT"}
+	required := []string{"MAILTRAP_API_TOKEN", "MAILTRAP_ENDPOINT", "TO_EMAIL", "TO_NAME", "FROM_EMAIL", "FROM_NAME"}
 	for _, v := range required {
 		if os.Getenv(v) == "" {
 			log.Fatalf("[INIT_ERR] Environment variable %s is not set. Please set it before running the application.", v)
@@ -83,28 +83,26 @@ func init() {
 
 func sendMailtrapEmail(c Contact) error {
 	apiToken := os.Getenv("MAILTRAP_API_TOKEN")
+	toEmail := os.Getenv("TO_EMAIL")
+	toName := os.Getenv("TO_NAME")
+	fromEmail := os.Getenv("FROM_EMAIL")
+	fromName := os.Getenv("FROM_NAME")
 
 	payloadStr := fmt.Sprintf(`{
 		"to": [
 			{
-				"email":"info@weather-wizards.com",
-				"name":"James Belanger"
-			}
-		],
-		"bcc": [
-			{
-				"email": "pandey.pran@gmail.com",
-				"name": "Pran Pandey"
+				"email":"%s",
+				"name":"%s"
 			}
 		],
 		"from": {
-			"email":"no-reply@proreact.dev",
-			"name":"Weather Wizards Contact Form"
+			"email":"%s",
+			"name":"%s"
 		},
 		"subject":"New Contact Form Submission",
 		"text":"New contact submitted:\n\nName: %s\nEmail: %s\nPhone: %s\nMessage: %s",
 		"category":"Weather Wizards Contact Form"
-	}`, c.Name, c.Email, c.Phone, c.Message)
+	}`, toEmail, toName, fromEmail, fromName, c.Name, c.Email, c.Phone, c.Message)
 
 	payload := strings.NewReader(payloadStr)
 	req, err := http.NewRequest("POST", os.Getenv("MAILTRAP_ENDPOINT"), payload)
