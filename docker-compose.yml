@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  crm-lite:
+    container_name: crm-lite
+    build: .
+    network_mode: host
+    volumes:
+      - crm-lite-db:/app/data
+    restart: unless-stopped
+
+volumes:
+  crm-lite-db:
+    external: true
