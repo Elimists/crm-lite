@@ -6,7 +6,7 @@ services:
     build: .
     network_mode: host
     volumes:
-      - crm-lite-db:/app/data
+      - crm-lite-db:/app/database
     restart: unless-stopped
     environment:
       - MAILTRAP_API_TOKEN
