@@ -8,6 +8,13 @@ services:
     volumes:
       - crm-lite-db:/app/data
     restart: unless-stopped
+    environment:
+      - MAILTRAP_API_TOKEN
+      - MAILTRAP_ENDPOINT
+      - TO_EMAIL
+      - TO_NAME
+      - FROM_EMAIL
+      - FROM_NAME
 
 volumes:
   crm-lite-db:
