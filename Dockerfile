@@ -20,7 +20,7 @@ FROM alpine:latest
 
 WORKDIR /app
 COPY --from=builder /app/crm-lite .
-COPY allowed_origins.json .
+COPY clients.json .
 
 EXPOSE 8080
 CMD ["./crm-lite"]
