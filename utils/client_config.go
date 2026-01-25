@@ -13,7 +13,7 @@ var clientsByOrigin map[string]models.ClientConfig
 func LoadClientConfigs(filename string) error {
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		return err
+		log.Fatal("[INIT_ERROR:LoadClientConfigs] The file - clients.json - might be missing from project root.")
 	}
 
 	var clients []models.ClientConfig
@@ -43,7 +43,7 @@ func normalizeOrigin(origin string) string {
 func VerifyRequiredEnv() {
 	for _, v := range clientsByOrigin {
 		if os.Getenv(v.EmailApiEnvTokenName) == "" {
-			log.Fatalf("[INIT_ERR] Environment variable %s is not set. Please set it before running the application.", v.EmailApiEnvTokenName)
+			log.Fatalf("[INIT_ERR:VerifyRequiredEnv] Environment variable %s is not set. Please set it before running the application.", v.EmailApiEnvTokenName)
 		}
 	}
 }
