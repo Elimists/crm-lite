@@ -17,7 +17,7 @@ var dbConn *sql.DB
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
-	utils.LoadClientConfigs("client.json")
+	utils.LoadClientConfigs("clients.json")
 	utils.VerifyRequiredEnv()
 
 	var err error
