@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"crm-lite/models"
 	"fmt"
 	"io"
@@ -9,12 +10,17 @@ import (
 	"strings"
 )
 
-func sendMailtrapEmail(c models.Contact) error {
-	apiToken := os.Getenv("MAILTRAP_API_TOKEN")
-	toEmail := os.Getenv("TO_EMAIL")
-	toName := os.Getenv("TO_NAME")
-	fromEmail := os.Getenv("FROM_EMAIL")
-	fromName := os.Getenv("FROM_NAME")
+func SendEmailNotification(ctx context.Context, c models.Contact) error {
+	clientContextModel, _ := ClientFromContext(ctx)
+
+	apiEndpoint := clientContextModel.EmailApiEndpoint
+	apiToken := os.Getenv(clientContextModel.EmailApiEnvTokenName)
+
+	fromEmail := clientContextModel.Email
+	fromName := clientContextModel.Name
+
+	toEmail := c.Email
+	toName := c.Name
 
 	payloadStr := fmt.Sprintf(`{
 		"to": [
@@ -33,7 +39,7 @@ func sendMailtrapEmail(c models.Contact) error {
 	}`, toEmail, toName, fromEmail, fromName, c.Name, c.Email, c.Phone, c.Message)
 
 	payload := strings.NewReader(payloadStr)
-	req, err := http.NewRequest("POST", os.Getenv("MAILTRAP_ENDPOINT"), payload)
+	req, err := http.NewRequest("POST", apiEndpoint, payload)
 	if err != nil {
 		fmt.Println("[MAIL_ERROR] Failed to create request:", err)
 		return err

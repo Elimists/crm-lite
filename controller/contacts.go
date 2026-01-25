@@ -3,6 +3,7 @@ package controller
 import (
 	"crm-lite/db"
 	"crm-lite/models"
+	"crm-lite/utils"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -11,21 +12,7 @@ import (
 
 func CreateContact(dbConn *sql.DB, w http.ResponseWriter, r *http.Request) {
 
-	source := r.Header.Get("Origin")
-	if source == "" {
-		log.Println("incoming request is missing origin header")
-		http.Error(w, "missing origin header", http.StatusBadRequest)
-		return
-	}
-
-	/* TODO move logic to utils pacakge
-	if !allowedOrigins[source] {
-		log.Println("origin not allowed:", source)
-		http.Error(w, "not allowed", http.StatusForbidden)
-		return
-	}
-	*/
-	log.Println("incoming request from origin:", source)
+	log.Println("incoming request from origin:", r.Header.Get("Origin"))
 
 	var c models.Contact
 
@@ -38,12 +25,9 @@ func CreateContact(dbConn *sql.DB, w http.ResponseWriter, r *http.Request) {
 	db.InsertContact(dbConn, c)
 	log.Println("new contact created for ", c.Email)
 
-	/* TODO move to utils package
-	if err := sendMailtrapEmail(c); err != nil {
+	if err := utils.SendEmailNotification(r.Context(), c); err != nil {
 		log.Println("failed to send alert email: ", err)
 	}
-	log.Println("alert email sent for ", c.Email)
-	*/
 
 	w.WriteHeader(http.StatusCreated)
 }

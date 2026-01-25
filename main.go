@@ -17,11 +17,8 @@ var dbConn *sql.DB
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
-	if err := utils.LoadAllowedOrigins("allowed_origins.json"); err != nil {
-		log.Fatal("[INIT_ERR] Failed to load allowed origins: ", err)
-	}
-
-	//utils.VerifyRequiredEnv()
+	utils.LoadClientConfigs("clients.json")
+	utils.VerifyRequiredEnv()
 
 	var err error
 	dbConn, err = db.OpenDB("contacts.db")
@@ -58,7 +55,7 @@ func ContactHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	http.Handle("/", http.HandlerFunc(HomeHandler))
-	http.Handle("/contact", utils.OriginMiddleware(http.HandlerFunc(ContactHandler)))
+	http.Handle("/contact", utils.ClientMiddleware(http.HandlerFunc(ContactHandler)))
 
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
