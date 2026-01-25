@@ -37,7 +37,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
 		"name":    "crm-lite",
-		"version": "1.0.0",
+		"version": "2.0",
 		"status":  "running",
 	})
 
