@@ -32,7 +32,7 @@ func ClientMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Printf("hmac signature recieved:%s\n", signature)
+		//log.Printf("hmac signature recieved:%s\n", signature)
 		bodyBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Println("failed to read body: ", err)
@@ -40,7 +40,7 @@ func ClientMiddleware(next http.Handler) http.Handler {
 		}
 
 		r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-		log.Printf("body string: %s\n", string(bodyBytes))
+		//log.Printf("body string: %s\n", string(bodyBytes))
 
 		secret := os.Getenv("SHARED_API_HMAC_KEY")
 		if !VerifyHMAC(bodyBytes, signature, secret) {

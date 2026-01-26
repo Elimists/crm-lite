@@ -16,11 +16,11 @@ func SendEmailNotification(ctx context.Context, c models.Contact) error {
 	apiEndpoint := clientContextModel.EmailApiEndpoint
 	apiToken := os.Getenv(clientContextModel.EmailApiEnvTokenName)
 
-	fromEmail := clientContextModel.Email
-	fromName := clientContextModel.Name
+	fromEmail := "no-reply@proreact.dev"
+	fromName := "Proreact - Pran Pandey"
 
-	toEmail := c.Email
-	toName := c.Name
+	toEmail := clientContextModel.Email
+	toName := clientContextModel.Name
 
 	payloadStr := fmt.Sprintf(`{
 		"to": [
@@ -61,6 +61,9 @@ func SendEmailNotification(ctx context.Context, c models.Contact) error {
 		fmt.Println("[MAIL_ERROR] Failed to read response body:", err)
 		return err
 	}
-	fmt.Println("email notification sent to: " + toName)
+
+	if resp.Status == "200 OK" {
+		fmt.Println("email notification sent to: " + toName)
+	}
 	return nil
 }
