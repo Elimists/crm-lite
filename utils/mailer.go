@@ -5,6 +5,7 @@ import (
 	"crm-lite/models"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -62,8 +63,6 @@ func SendEmailNotification(ctx context.Context, c models.Contact) error {
 		return err
 	}
 
-	if resp.Status == "200 OK" {
-		fmt.Println("email notification sent to: " + toName)
-	}
+	log.Printf("[LOG_MAIL] Email request status was %s.  Email was sent to %s (%s)", resp.Status, toName, toEmail)
 	return nil
 }

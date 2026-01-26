@@ -17,7 +17,7 @@ var dbConn *sql.DB
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
-	utils.LoadClientConfigs("clients.json")
+	utils.LoadClientConfigs("client_configs.json")
 	utils.VerifyRequiredEnv()
 
 	var err error
@@ -30,7 +30,7 @@ func init() {
 		log.Fatal("[MIGRATION_ERR] Failed to create tables:", err)
 	}
 
-	log.Println("Initialization complete: DB + Allowed Origins + SMTP OK.")
+	log.Println("[LOG_INIT] Initialization complete: DB + Client + SMTP OK.")
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
