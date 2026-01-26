@@ -41,9 +41,15 @@ func normalizeOrigin(origin string) string {
 }
 
 func VerifyRequiredEnv() {
+
+	if os.Getenv("SHARED_API_HMAC_KEY") == "" {
+		log.Fatal("[INIT_ERR:VerifyRequiredEnv] Environment variable - SHARED_API_HMAC_KEY- is not set. Please set it before running the application.")
+	}
+
 	for _, v := range clientsByOrigin {
 		if os.Getenv(v.EmailApiEnvTokenName) == "" {
 			log.Fatalf("[INIT_ERR:VerifyRequiredEnv] Environment variable %s is not set. Please set it before running the application.", v.EmailApiEnvTokenName)
 		}
 	}
+
 }

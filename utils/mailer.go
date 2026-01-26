@@ -61,5 +61,6 @@ func SendEmailNotification(ctx context.Context, c models.Contact) error {
 		fmt.Println("[MAIL_ERROR] Failed to read response body:", err)
 		return err
 	}
+	fmt.Println("email notification sent to: " + toName)
 	return nil
 }
