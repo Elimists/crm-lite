@@ -13,7 +13,7 @@ var clientsByOrigin map[string]models.ClientConfig
 func LoadClientConfigs(filename string) error {
 	data, err := os.ReadFile(filename)
 	if err != nil {
-		log.Fatal("[INIT_ERROR:LoadClientConfigs] The file - clients.json - might be missing from project root.")
+		log.Fatal("[INIT_ERROR:LoadClientConfigs] The file - client_configs.json - might be missing from project root.")
 	}
 
 	var clients []models.ClientConfig
