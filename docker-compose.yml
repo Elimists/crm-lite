@@ -4,7 +4,8 @@ services:
   crm-lite:
     container_name: crm-lite
     build: .
-    network_mode: host
+    ports:
+      - "8080:8080"
     volumes:
       - crm-lite-db:/app/database
     restart: unless-stopped
