@@ -1,0 +1,10 @@
+# Get app info
+GET {{endpoint}} HTTP/1.1
+
+### Create a new contact
+POST {{endpoint}}/contact HTTP/1.1
+Origin: http://localhost:3000
+X-Signature: {{signature}}
+Content-Type: application/json
+
+{"name":"TestPran","email":"pandey.pran@gmail.com","phone":"306-881-6340","message":"Test"}
