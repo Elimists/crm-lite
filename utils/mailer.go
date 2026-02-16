@@ -2,7 +2,7 @@ package utils
 
 import (
 	"context"
-	"crm-lite/models"
+	"crm-lite/db"
 	"fmt"
 	"io"
 	"log"
@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func SendEmailNotification(ctx context.Context, c models.Contact) error {
+func SendEmailNotification(ctx context.Context, c db.Contact) error {
 	clientContextModel, _ := ClientFromContext(ctx)
 
 	apiEndpoint := clientContextModel.EmailApiEndpoint
