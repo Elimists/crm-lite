@@ -35,8 +35,6 @@ func GetDuration(key, fallback string) time.Duration {
 
 	d, err := time.ParseDuration(s)
 	if err != nil {
-		// If the env is invalid (like "15minutes" instead of "15m"),
-		// fallback to a safe default.
 		d, _ = time.ParseDuration(fallback)
 	}
 	return d
