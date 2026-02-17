@@ -25,6 +25,7 @@ type Tenant struct {
 	ID          int32
 	Name        string
 	Slug        string
+	Email       string
 	CompanyUrl  pgtype.Text
 	Description pgtype.Text
 	Timezone    pgtype.Text

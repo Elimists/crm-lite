@@ -1,6 +1,9 @@
 package db
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // USER specific helpers
 func (u *User) IsSystemAdmin() bool {
@@ -32,6 +35,12 @@ func (t *Tenant) Location() *time.Location {
 		return time.UTC
 	}
 	return loc
+}
+
+func (t *Tenant) MakeSlug(name string) string {
+	s := strings.ToLower(name)
+	s = strings.ReplaceAll(s, " ", "-")
+	return s
 }
 
 // CONTACT specific helpers

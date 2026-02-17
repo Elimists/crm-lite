@@ -25,7 +25,7 @@ func DisplayLoginPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 

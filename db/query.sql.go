@@ -72,7 +72,7 @@ func (q *Queries) GetContact(ctx context.Context, id int32) (Contact, error) {
 }
 
 const getTenantBySlug = `-- name: GetTenantBySlug :one
-SELECT id, name, slug, company_url, description, timezone, created_at, updated_at FROM tenants
+SELECT id, name, slug, email, company_url, description, timezone, created_at, updated_at FROM tenants
 WHERE slug = $1 LIMIT 1
 `
 
@@ -83,6 +83,7 @@ func (q *Queries) GetTenantBySlug(ctx context.Context, slug string) (Tenant, err
 		&i.ID,
 		&i.Name,
 		&i.Slug,
+		&i.Email,
 		&i.CompanyUrl,
 		&i.Description,
 		&i.Timezone,
@@ -255,7 +256,7 @@ func (q *Queries) ListContactsByTenantSlug(ctx context.Context, slug string) ([]
 }
 
 const listTenants = `-- name: ListTenants :many
-SELECT id, name, slug, company_url, description, timezone, created_at, updated_at FROM tenants
+SELECT id, name, slug, email, company_url, description, timezone, created_at, updated_at FROM tenants
 `
 
 func (q *Queries) ListTenants(ctx context.Context) ([]Tenant, error) {
@@ -271,6 +272,7 @@ func (q *Queries) ListTenants(ctx context.Context) ([]Tenant, error) {
 			&i.ID,
 			&i.Name,
 			&i.Slug,
+			&i.Email,
 			&i.CompanyUrl,
 			&i.Description,
 			&i.Timezone,

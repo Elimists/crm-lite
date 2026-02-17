@@ -1,68 +1,66 @@
 package utils
 
 import (
-	"context"
+	"bytes"
 	"crm-lite/db"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 )
 
-func SendEmailNotification(ctx context.Context, c db.Contact) error {
-	clientContextModel, _ := ClientFromContext(ctx)
-
-	apiEndpoint := clientContextModel.EmailApiEndpoint
-	apiToken := os.Getenv(clientContextModel.EmailApiEnvTokenName)
+func NotifyTenant(t *db.Tenant, c *db.Contact) error {
+	apiEndpoint := os.Getenv("MAIL_ENDPOINT")
+	apiToken := os.Getenv("MAIL_TOKEN")
 
 	fromEmail := "no-reply@proreact.dev"
-	fromName := "Proreact - Pran Pandey"
+	fromName := "ProReact Notification System"
+	toEmail := t.Email
+	toName := t.Name + "'s admin"
 
-	toEmail := clientContextModel.Email
-	toName := clientContextModel.Name
+	phone := ""
+	if c.Phone.Valid {
+		phone = c.Phone.String
+	}
 
-	payloadStr := fmt.Sprintf(`{
-		"to": [
-			{
-				"email":"%s",
-				"name":"%s"
-			}
-		],
-		"from": {
-			"email":"%s",
-			"name":"%s"
+	payload := map[string]interface{}{
+		"to": []map[string]string{
+			{"email": toEmail, "name": toName},
 		},
-		"subject":"New Contact Form Submission",
-		"text":"New contact submitted:\n\nName: %s\nEmail: %s\nPhone: %s\nMessage: %s",
-		"category":"Weather Wizards Contact Form"
-	}`, toEmail, toName, fromEmail, fromName, c.Name, c.Email, c.Phone, c.Message)
+		"from": map[string]string{
+			"email": fromEmail, "name": fromName,
+		},
+		"subject":  "New Contact Form Submission",
+		"text":     fmt.Sprintf("New contact submitted:\n\nName: %s\nEmail: %s\nPhone: %s\nMessage: %s", c.Name, c.Email, phone, c.Message),
+		"category": "Weather Wizards Contact Form",
+	}
 
-	payload := strings.NewReader(payloadStr)
-	req, err := http.NewRequest("POST", apiEndpoint, payload)
+	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("[MAIL_ERROR] Failed to create request:", err)
-		return err
+		return fmt.Errorf("failed to marshal mail payload: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewReader(payloadBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Api-Token", apiToken)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Println("[MAIL_ERROR] Failed to send request:", err)
-		return err
+		return fmt.Errorf("failed to send request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	_, err = io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("[MAIL_ERROR] Failed to read response body:", err)
-		return err
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("mail API error %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	log.Printf("[LOG_MAIL] Email request status was %s.  Email was sent to %s (%s)", resp.Status, toName, toEmail)
+	log.Printf("[LOG_MAIL] Email request status %s. Email sent to %s (%s)", resp.Status, toName, toEmail)
 	return nil
 }
