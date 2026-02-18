@@ -3,6 +3,7 @@ package contacts
 import (
 	"context"
 	repo "crm-lite/internal/adapters/storage/postgresql/sqlc"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -37,7 +38,7 @@ func (s *svc) CreateContact(ctx context.Context, c createContactParams) (repo.Co
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return repo.Contact{}, err
+		return repo.Contact{}, errors.New("error acquiring db connection from pool")
 	}
 	defer tx.Rollback(ctx)
 
@@ -51,7 +52,7 @@ func (s *svc) CreateContact(ctx context.Context, c createContactParams) (repo.Co
 		SourceDomain: c.SourceDomain,
 	})
 	if err != nil {
-		return repo.Contact{}, err
+		return repo.Contact{}, errors.New("error creating contact")
 	}
 
 	if err := tx.Commit(ctx); err != nil {

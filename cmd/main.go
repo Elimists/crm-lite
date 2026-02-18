@@ -27,8 +27,8 @@ func main() {
 	cfg.db = dbConfig{
 		host:        env.GetString("DB_HOST", "localhost"),
 		port:        env.GetString("DB_PORT", "5432"),
-		user:        env.GetString("DB_USER", "pran"),
-		pass:        env.GetString("DB_PASSWORD", "abc@123"),
+		user:        env.GetString("DB_USER", "postgres"),
+		pass:        env.GetString("DB_PASSWORD", "postgres"),
 		name:        env.GetString("DB_NAME", cfg.slug),
 		sslmode:     env.GetString("DB_SSLMODE", "disable"),
 		maxConn:     int32(env.GetInt("DB_MAX_CONN", 25)),
@@ -46,7 +46,7 @@ func main() {
 	logger.Info("connected to database", "db", cfg.db.name)
 
 	authenticator := jwt.NewAuthenticator(
-		env.GetString("JWT_SECRET", "defaultrandomverylongstring1a2b3c4d5e"),
+		env.GetString("JWT_SECRET", "devdefaultrandomverylongstring1a2b3c4d5e"),
 		cfg.slug)
 
 	// Application

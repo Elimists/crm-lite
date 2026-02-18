@@ -21,7 +21,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := h.service.Authenticate(r.Context(), "", "")
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "invalid email or password", http.StatusUnauthorized)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
