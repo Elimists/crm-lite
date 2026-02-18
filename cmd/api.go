@@ -1,13 +1,14 @@
 package main
 
 import (
-	"crm-lite/internal/contacts"
+	"crm-lite/internal/domain/contacts"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func (app *application) mount() http.Handler {
@@ -23,10 +24,15 @@ func (app *application) mount() http.Handler {
 		w.Write([]byte("welcome"))
 	})
 
-	contactService := contacts.NewService()
+	contactService := contacts.NewService(app.db)
 	contactHandler := contacts.NewHandler(contactService)
 	r.Route("/contacts", func(r chi.Router) {
 		r.Post("/", contactHandler.CreateContact)
+		r.Get("/", contactHandler.GetContacts)
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", contactHandler.GetContact)
+		})
+
 	})
 
 	return r
@@ -44,6 +50,7 @@ func (app *application) run(h http.Handler) error {
 
 type application struct {
 	config config
+	db     *pgxpool.Pool
 }
 
 type config struct {

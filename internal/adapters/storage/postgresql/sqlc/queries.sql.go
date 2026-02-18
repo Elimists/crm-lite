@@ -50,3 +50,25 @@ func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (C
 	)
 	return i, err
 }
+
+const getContact = `-- name: GetContact :one
+SELECT id, name, email, phone, message, source_domain, status, created_at, updated_at FROM contacts
+WHERE id = $1
+`
+
+func (q *Queries) GetContact(ctx context.Context, id int32) (Contact, error) {
+	row := q.db.QueryRow(ctx, getContact, id)
+	var i Contact
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Phone,
+		&i.Message,
+		&i.SourceDomain,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -36,17 +36,18 @@ func main() {
 
 	// Database
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", cfg.db.user, cfg.db.pass, cfg.db.host, cfg.db.port, cfg.db.name, cfg.db.sslmode)
-	conn, err := pgx.Connect(ctx, dsn)
+	db, err := pgxpool.New(ctx, dsn)
 	if err != nil {
 		slog.Error("unable to connect to db", "error", err)
 		os.Exit(1)
 	}
-	defer conn.Close(ctx)
+	defer db.Close()
 	logger.Info("connected to database", "db", cfg.db.name)
 
 	// Application
 	api := &application{
 		config: *cfg,
+		db:     db,
 	}
 	if err := api.run(api.mount()); err != nil {
 		slog.Error("server failed to start", "error", err)

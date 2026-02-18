@@ -5,3 +5,7 @@ INSERT INTO contacts (
     $1, $2, $3, $4, $5, 'new'
 )
 RETURNING *;
+
+-- name: GetContact :one
+SELECT * FROM contacts
+WHERE id = $1;

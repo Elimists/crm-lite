@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error)
+	GetContact(ctx context.Context, id int32) (Contact, error)
 }
 
 var _ Querier = (*Queries)(nil)
