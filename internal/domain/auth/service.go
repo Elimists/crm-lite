@@ -5,6 +5,7 @@ import (
 	repo "crm-lite/internal/adapters/storage/postgresql/sqlc"
 	"errors"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,7 +18,7 @@ type svc struct {
 	repo *repo.Queries
 }
 
-func NewService(db repo.DBTX) Service {
+func NewService(db *pgxpool.Pool) Service {
 	return &svc{
 		repo: repo.New(db),
 	}

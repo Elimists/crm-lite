@@ -7,16 +7,19 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type handler struct {
 	authenticator *jwt.Authenticator
 	service       Service
 }
 
-func NewHandler(auth *jwt.Authenticator) *Handler {
-	return &Handler{authenticator: auth}
+func NewHandler(auth *jwt.Authenticator, service Service) *handler {
+	return &handler{
+		authenticator: auth,
+		service:       service,
+	}
 }
 
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.service.Authenticate(r.Context(), "", "")
 	if err != nil {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crm-lite/internal/domain/auth"
 	"crm-lite/internal/domain/contacts"
 	"crm-lite/internal/jwt"
 	"log"
@@ -38,7 +39,23 @@ func (app *application) mount() http.Handler {
 
 	})
 
+	authService := auth.NewService(app.db)
+	authHandler := auth.NewHandler(&app.authenticator, authService)
+	r.Route("/login", func(r chi.Router) {
+		r.Post("/", authHandler.Login)
+	})
+
 	return r
+}
+
+func (app *application) run(h http.Handler) error {
+	server := &http.Server{
+		Addr:    app.config.addr,
+		Handler: h,
+	}
+
+	log.Printf("server has started at addr %s", app.config.addr)
+	return server.ListenAndServe()
 }
 
 func (app *application) AuthMiddleware(next http.Handler) http.Handler {
@@ -59,16 +76,6 @@ func (app *application) AuthMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func (app *application) run(h http.Handler) error {
-	server := &http.Server{
-		Addr:    app.config.addr,
-		Handler: h,
-	}
-
-	log.Printf("server has started at addr %s", app.config.addr)
-	return server.ListenAndServe()
 }
 
 type contextKey string
