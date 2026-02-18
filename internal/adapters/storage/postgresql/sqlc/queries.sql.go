@@ -72,3 +72,47 @@ func (q *Queries) GetContact(ctx context.Context, id int32) (Contact, error) {
 	)
 	return i, err
 }
+
+const getUser = `-- name: GetUser :one
+SELECT 
+    u.id, u.user_name, u.fname, u.lname, u.email, u.password_hash, u.roles, u.scopes, u.created_at, u.updated_at, u.tenant_id, 
+    t.slug AS tenant_slug 
+FROM users u
+JOIN tenants t ON u.tenant_id = t.id
+WHERE u.email = $1 LIMIT 1
+`
+
+type GetUserRow struct {
+	ID           int32              `json:"id"`
+	UserName     string             `json:"user_name"`
+	Fname        pgtype.Text        `json:"fname"`
+	Lname        pgtype.Text        `json:"lname"`
+	Email        string             `json:"email"`
+	PasswordHash string             `json:"password_hash"`
+	Roles        []string           `json:"roles"`
+	Scopes       []string           `json:"scopes"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	TenantID     int32              `json:"tenant_id"`
+	TenantSlug   string             `json:"tenant_slug"`
+}
+
+func (q *Queries) GetUser(ctx context.Context, email string) (GetUserRow, error) {
+	row := q.db.QueryRow(ctx, getUser, email)
+	var i GetUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserName,
+		&i.Fname,
+		&i.Lname,
+		&i.Email,
+		&i.PasswordHash,
+		&i.Roles,
+		&i.Scopes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.TenantID,
+		&i.TenantSlug,
+	)
+	return i, err
+}

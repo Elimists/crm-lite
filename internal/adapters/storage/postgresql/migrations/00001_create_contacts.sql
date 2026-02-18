@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS contacts (
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS contacts;
 -- +goose StatementEnd

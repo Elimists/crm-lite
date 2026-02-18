@@ -19,3 +19,29 @@ type Contact struct {
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
+
+type Tenant struct {
+	ID          int32              `json:"id"`
+	Name        string             `json:"name"`
+	Slug        string             `json:"slug"`
+	Email       string             `json:"email"`
+	CompanyUrl  pgtype.Text        `json:"company_url"`
+	Description pgtype.Text        `json:"description"`
+	Timezone    pgtype.Text        `json:"timezone"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type User struct {
+	ID           int32              `json:"id"`
+	UserName     string             `json:"user_name"`
+	Fname        pgtype.Text        `json:"fname"`
+	Lname        pgtype.Text        `json:"lname"`
+	Email        string             `json:"email"`
+	PasswordHash string             `json:"password_hash"`
+	Roles        []string           `json:"roles"`
+	Scopes       []string           `json:"scopes"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	TenantID     int32              `json:"tenant_id"`
+}

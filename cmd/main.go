@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crm-lite/internal/env"
+	"crm-lite/internal/jwt"
 	"fmt"
 	"log/slog"
 	"os"
@@ -44,10 +45,15 @@ func main() {
 	defer db.Close()
 	logger.Info("connected to database", "db", cfg.db.name)
 
+	authenticator := jwt.NewAuthenticator(
+		env.GetString("JWT_SECRET", "defaultrandomverylongstring1a2b3c4d5e"),
+		cfg.slug)
+
 	// Application
 	api := &application{
-		config: *cfg,
-		db:     db,
+		config:        *cfg,
+		db:            db,
+		authenticator: *authenticator,
 	}
 	if err := api.run(api.mount()); err != nil {
 		slog.Error("server failed to start", "error", err)
