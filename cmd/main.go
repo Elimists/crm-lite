@@ -50,14 +50,14 @@ func main() {
 	*/
 
 	// Application
-	api := &application{
-		config:        cfg,
-		db:            db,
-		views:         views,
-		authenticator: authenticator,
-		static:        web.StaticFiles,
+	api := &web.Application{
+		Config:        cfg,
+		DB:            db,
+		Views:         views,
+		Authenticator: authenticator,
+		Static:        web.StaticFiles,
 	}
-	if err := api.run(api.mount()); err != nil {
+	if err := api.Run(api.Mount()); err != nil {
 		slog.Error("server failed to start", "error", err)
 		os.Exit(1)
 	}

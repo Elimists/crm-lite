@@ -1,47 +1,28 @@
 package web
 
 import (
-	"bytes"
-	"crm-lite/internal/crypto"
-	"io"
-	"log"
+	"context"
 	"net/http"
-	"os"
 )
 
-func ClientMiddleware(next http.Handler) http.Handler {
+type contextKey string
+
+func (app *Application) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		source := r.Header.Get("Origin")
-		if source == "" {
-			log.Println("incoming request is missing origin header")
-			http.Error(w, "bad request", http.StatusBadRequest)
+		token := r.Header.Get("Authorization")
+		if token == "" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		signature := r.Header.Get("X-Signature")
-		if signature == "" {
-			log.Println("missing HMAC signature")
-			http.Error(w, "forbidden", http.StatusForbidden)
-			return
-		}
-
-		//log.Printf("hmac signature recieved:%s\n", signature)
-		bodyBytes, err := io.ReadAll(r.Body)
+		claims, err := app.Authenticator.ValidateToken(token)
 		if err != nil {
-			log.Println("failed to read body: ", err)
-			http.Error(w, "internal server error", http.StatusInternalServerError)
-		}
-
-		r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-		//log.Printf("body string: %s\n", string(bodyBytes))
-
-		secret := os.Getenv("SHARED_API_HMAC_KEY")
-		if !crypto.VerifyHMAC(bodyBytes, signature, secret) {
-			log.Println("invalid HMAC signature")
-			http.Error(w, "forbidden", http.StatusForbidden)
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
+		var claimsKey contextKey = contextKey(app.Config.App.Slug + "_claims")
+		ctx := context.WithValue(r.Context(), claimsKey, claims)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

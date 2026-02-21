@@ -1,24 +1,25 @@
-package auth
+package handlers
 
 import (
+	"crm-lite/internal/domain/auth"
 	"crm-lite/internal/json"
 	"html/template"
 	"net/http"
 )
 
-type handler struct {
-	service Service
+type AuthHandler struct {
+	service auth.Service
 	views   *template.Template
 }
 
-func NewHandler(service Service, views *template.Template) *handler {
-	return &handler{
+func NewAuthHandler(service auth.Service, views *template.Template) *AuthHandler {
+	return &AuthHandler{
 		service: service,
 		views:   views,
 	}
 }
 
-func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	username, password := r.FormValue("username"), r.FormValue("password")
 
@@ -31,7 +32,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusOK, map[string]string{"token": token})
 }
 
-func (h *handler) GetLoginPage(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) GetLoginPage(w http.ResponseWriter, r *http.Request) {
 
 	err := h.views.ExecuteTemplate(w, "login.html", nil)
 	if err != nil {
@@ -39,7 +40,7 @@ func (h *handler) GetLoginPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",

@@ -4,7 +4,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type createContactParams struct {
+type CreateContactParams struct {
 	Name         string      `json:"name"`
 	Email        string      `json:"email"`
 	Phone        pgtype.Text `json:"phone"`

@@ -1,21 +1,22 @@
-package health
+package handlers
 
 import (
+	"crm-lite/internal/domain/health"
 	"encoding/json"
 	"net/http"
 )
 
-type handler struct {
-	service Service
+type HealthHandler struct {
+	service health.Service
 }
 
-func NewHandler(service Service) *handler {
-	return &handler{
+func NewHealthHandler(service health.Service) *HealthHandler {
+	return &HealthHandler{
 		service: service,
 	}
 }
 
-func (h *handler) GetHealth(w http.ResponseWriter, r *http.Request) {
+func (h *HealthHandler) GetHealth(w http.ResponseWriter, r *http.Request) {
 	data := h.service.GetHealth()
 
 	w.Header().Set("Content-Type", "application/json")

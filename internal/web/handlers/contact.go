@@ -1,6 +1,7 @@
-package contacts
+package handlers
 
 import (
+	"crm-lite/internal/domain/contacts"
 	"crm-lite/internal/json"
 	"log"
 	"net/http"
@@ -9,17 +10,17 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type handler struct {
-	service Service
+type ContactHandler struct {
+	service contacts.Service
 }
 
-func NewHandler(service Service) *handler {
-	return &handler{
+func NewContactHandler(service contacts.Service) *ContactHandler {
+	return &ContactHandler{
 		service: service,
 	}
 }
 
-func (h *handler) GetContact(w http.ResponseWriter, r *http.Request) {
+func (h *ContactHandler) GetContact(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "id")
 
 	id, err := strconv.ParseInt(idParam, 10, 32)
@@ -38,12 +39,12 @@ func (h *handler) GetContact(w http.ResponseWriter, r *http.Request) {
 	json.Write(w, http.StatusOK, contact)
 }
 
-func (h *handler) GetContacts(w http.ResponseWriter, r *http.Request) {
+func (h *ContactHandler) GetContacts(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("all contacts - not allowed"))
 }
 
-func (h *handler) CreateContact(w http.ResponseWriter, r *http.Request) {
-	var tempContact createContactParams
+func (h *ContactHandler) CreateContact(w http.ResponseWriter, r *http.Request) {
+	var tempContact contacts.CreateContactParams
 
 	if err := json.Read(r, &tempContact); err != nil {
 		log.Println(err)

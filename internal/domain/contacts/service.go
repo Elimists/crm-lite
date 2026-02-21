@@ -9,7 +9,7 @@ import (
 )
 
 type Service interface {
-	CreateContact(ctx context.Context, tempContact createContactParams) (repo.Contact, error)
+	CreateContact(ctx context.Context, tempContact CreateContactParams) (repo.Contact, error)
 	GetContact(ctx context.Context, id int32) (repo.Contact, error)
 }
 
@@ -34,7 +34,7 @@ func (s *svc) GetContact(ctx context.Context, id int32) (repo.Contact, error) {
 	return contact, nil
 }
 
-func (s *svc) CreateContact(ctx context.Context, c createContactParams) (repo.Contact, error) {
+func (s *svc) CreateContact(ctx context.Context, c CreateContactParams) (repo.Contact, error) {
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
