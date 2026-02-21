@@ -1,8 +1,7 @@
-package utils
+package mail
 
 import (
 	"bytes"
-	"crm-lite/db"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,19 +10,16 @@ import (
 	"os"
 )
 
-func NotifyTenant(t *db.Tenant, c *db.Contact) error {
+func NotifyTenant() error {
 	apiEndpoint := os.Getenv("MAIL_ENDPOINT")
 	apiToken := os.Getenv("MAIL_TOKEN")
 
 	fromEmail := "no-reply@proreact.dev"
 	fromName := "ProReact Notification System"
-	toEmail := t.Email
-	toName := t.Name + "'s admin"
+	toEmail := " "
+	toName := " " + "'s admin"
 
 	phone := ""
-	if c.Phone.Valid {
-		phone = c.Phone.String
-	}
 
 	payload := map[string]interface{}{
 		"to": []map[string]string{
@@ -33,7 +29,7 @@ func NotifyTenant(t *db.Tenant, c *db.Contact) error {
 			"email": fromEmail, "name": fromName,
 		},
 		"subject":  "New Contact Form Submission",
-		"text":     fmt.Sprintf("New contact submitted:\n\nName: %s\nEmail: %s\nPhone: %s\nMessage: %s", c.Name, c.Email, phone, c.Message),
+		"text":     fmt.Sprintf("New contact submitted:\n\nName: %s\nEmail: %s\nPhone: %s\nMessage: %s", "name", "email", phone, "message"),
 		"category": "Weather Wizards Contact Form",
 	}
 

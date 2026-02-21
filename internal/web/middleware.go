@@ -1,7 +1,8 @@
-package utils
+package web
 
 import (
 	"bytes"
+	"crm-lite/internal/crypto"
 	"io"
 	"log"
 	"net/http"
@@ -35,7 +36,7 @@ func ClientMiddleware(next http.Handler) http.Handler {
 		//log.Printf("body string: %s\n", string(bodyBytes))
 
 		secret := os.Getenv("SHARED_API_HMAC_KEY")
-		if !VerifyHMAC(bodyBytes, signature, secret) {
+		if !crypto.VerifyHMAC(bodyBytes, signature, secret) {
 			log.Println("invalid HMAC signature")
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return

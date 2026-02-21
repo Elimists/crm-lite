@@ -8,6 +8,8 @@ require (
 	golang.org/x/crypto v0.48.0
 )
 
+require gopkg.in/yaml.v3 v3.0.1 // indirect
+
 require (
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/jackc/pgpassfile v1.0.0 // indirect
