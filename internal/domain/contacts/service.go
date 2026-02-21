@@ -5,13 +5,9 @@ import (
 	repo "crm-lite/internal/adapters/storage/postgresql/sqlc"
 	"errors"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-type Service interface {
-	CreateContact(ctx context.Context, tempContact CreateContactParams) (repo.Contact, error)
-	GetContact(ctx context.Context, id int32) (repo.Contact, error)
-}
 
 type svc struct {
 	db   *pgxpool.Pool
@@ -25,20 +21,28 @@ func NewService(db *pgxpool.Pool) Service {
 	}
 }
 
-func (s *svc) GetContact(ctx context.Context, id int32) (repo.Contact, error) {
+func (s *svc) GetContact(ctx context.Context, id int32) (Contact, error) {
 
 	contact, err := s.repo.GetContact(ctx, id)
 	if err != nil {
-		return repo.Contact{}, err
+		return Contact{}, err
 	}
-	return contact, nil
+	return Contact{
+		ID:           contact.ID,
+		Name:         contact.Name,
+		Email:        contact.Email,
+		Phone:        contact.Phone.String,
+		Message:      contact.Message,
+		SourceDomain: contact.SourceDomain,
+		CreatedAt:    contact.CreatedAt.Time,
+	}, nil
 }
 
-func (s *svc) CreateContact(ctx context.Context, c CreateContactParams) (repo.Contact, error) {
+func (s *svc) CreateContact(ctx context.Context, c CreateContactParams) (Contact, error) {
 
 	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return repo.Contact{}, errors.New("error acquiring db connection from pool")
+		return Contact{}, errors.New("error acquiring db connection from pool")
 	}
 	defer tx.Rollback(ctx)
 
@@ -47,17 +51,25 @@ func (s *svc) CreateContact(ctx context.Context, c CreateContactParams) (repo.Co
 	contact, err := qtx.CreateContact(ctx, repo.CreateContactParams{
 		Name:         c.Name,
 		Email:        c.Email,
-		Phone:        c.Phone,
+		Phone:        pgtype.Text{String: c.Phone, Valid: c.Phone != ""},
 		Message:      c.Message,
 		SourceDomain: c.SourceDomain,
 	})
 	if err != nil {
-		return repo.Contact{}, errors.New("error creating contact")
+		return Contact{}, errors.New("error creating contact")
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return repo.Contact{}, err
+		return Contact{}, err
 	}
 
-	return contact, nil
+	return Contact{
+		ID:           contact.ID,
+		Name:         contact.Name,
+		Email:        contact.Email,
+		Phone:        contact.Phone.String,
+		Message:      contact.Message,
+		SourceDomain: contact.SourceDomain,
+		CreatedAt:    contact.CreatedAt.Time,
+	}, nil
 }
