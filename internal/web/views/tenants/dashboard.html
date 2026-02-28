@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CRM Lite Login</title>
+    <link rel="stylesheet" href="/static/css/index.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+    <div>
+        Welcome to dashboard!
+
+        <form action="/logout" method="post">
+            <input type="submit" value="logout">
+        </form>
+
+        <div class="table-container">
+            <h1>Tenants</h1>
+            <button>Add</button>
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <th>Timezone</th>
+                    <th>Updated At</th>
+                    <th>Created At</th>
+                </tr>
+                <tr>
+                    <td>ProReact</td>
+                    <td>America/Regina</td>
+                    <td>January 1, 2026 11:30:00PM</td>
+                    <td>January 12, 2026 09:12:23AM</td>
+                </tr>
+                <tr>
+                    <td>ProReact</td>
+                    <td>America/Regina</td>
+                    <td>January 1, 2026 11:30:00PM</td>
+                    <td>January 12, 2026 09:12:23AM</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
+</body>
+
+</html>

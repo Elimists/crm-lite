@@ -13,7 +13,7 @@ COPY . .
 
 # Enable CGO for go-sqlite3
 ENV CGO_ENABLED=1
-RUN go build -ldflags="-s -w" -o crm-lite .
+RUN go build -ldflags="-s -w" -o crm-lite ./cmd/*.go
 
 # Final stage
 FROM alpine:latest
